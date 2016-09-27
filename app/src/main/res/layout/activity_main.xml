@@ -10,38 +10,47 @@
     android:id="@+id/container"
     tools:context="wgl.example.com.googlemappath1.MainActivity">
 
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/radioGroup"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="start"
+            android:id="@+id/start_r"
+            android:checked="true" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="stop"
+            android:id="@+id/stop_r"
+            android:checked="false" />
+    </RadioGroup>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="출발"
-        android:id="@+id/textView"
+        android:id="@+id/start_t"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="10dp" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/start_txt"
-        android:layout_alignParentTop="true"
-        android:layout_toEndOf="@+id/textView" />
+        android:layout_toEndOf="@+id/path"
+        android:layout_marginTop="5dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="도착"
-        android:id="@+id/textView2"
-        android:layout_alignBottom="@+id/stop_txt"
-        android:layout_alignParentStart="true" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/stop_txt"
-        android:layout_below="@+id/textView"
-        android:layout_toEndOf="@+id/textView2" />
+        android:id="@+id/stop_t"
+        android:layout_below="@+id/start_t"
+        android:layout_alignStart="@+id/start_t"
+        android:layout_marginTop="10dp" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
@@ -49,8 +58,9 @@
         android:layout_height="wrap_content"
         android:text="path"
         android:id="@+id/path"
-        android:layout_below="@+id/stop_txt"
-        android:layout_alignParentStart="true" />
+        android:layout_below="@+id/stop_t"
+        android:layout_alignParentStart="false"
+        android:layout_alignParentLeft="true" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
@@ -58,9 +68,8 @@
         android:layout_height="wrap_content"
         android:text="reset"
         android:id="@+id/reset"
-        android:layout_alignTop="@+id/path"
-        android:layout_toEndOf="@+id/path"
-        android:layout_marginStart="35dp" />
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/stop_t" />
     <fragment
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -76,8 +85,7 @@
         android:layout_height="wrap_content"
         android:text="list"
         android:id="@+id/list_show"
-        android:layout_alignTop="@+id/reset"
-        android:layout_toEndOf="@+id/reset"
-        android:layout_marginStart="39dp" />
+        android:layout_alignEnd="@+id/map"
+        android:layout_below="@+id/stop_t" />
 
 </RelativeLayout>

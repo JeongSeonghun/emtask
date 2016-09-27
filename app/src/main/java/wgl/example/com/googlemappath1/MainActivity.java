@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 //import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -35,12 +37,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         ,GoogleMap.OnMapClickListener{
     private GoogleMap map;
     Button pathBt, resetBt;
-    EditText startTxt, stopTxt;
+    TextView startTxt, stopTxt;
     Marker startMark, stopMark;
     boolean sMarkAdd=true, eMarkAdd=true; //마커 표시 여부
     SupportMapFragment mapfrag;
     Button listShow;
     int rePolyCheck=0;  //경로 개수 확인
+    RadioButton startR, stopR;
 
     String list_val="";    //intent전달용 json값
 
@@ -51,8 +54,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         pathBt= (Button)findViewById(R.id.path);
         resetBt= (Button)findViewById(R.id.reset);
-        startTxt= (EditText)findViewById(R.id.start_txt);
-        stopTxt= (EditText)findViewById(R.id.stop_txt);
+
+        startTxt= (TextView)findViewById(R.id.start_t);
+        stopTxt= (TextView)findViewById(R.id.stop_t);
+
+        startR= (RadioButton)findViewById(R.id.start_r);
+        stopR= (RadioButton)findViewById(R.id.stop_r);
 
         mapfrag= ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
         mapfrag.getMapAsync(this);
@@ -65,13 +72,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //nodeWgs.execute("https://maps.googleapis.com/maps/api/directions/json?origin=-33.866,151.195&destination=-33.866,148.195&key=AIzaSyCc2PqOCbvrNGtDRwINl4X_tiywxt9TDPA");
 
                 if(rePolyCheck<3){
-                    if(pathReadyCk(startTxt.getText().toString())
-                            &&pathReadyCk(stopTxt.getText().toString())){
-                        nodeWgs.execute("https://maps.googleapis.com/maps/api/directions/json?"
-                                +"origin="+startTxt.getText().toString()
-                                +"&destination="+stopTxt.getText().toString()
-                                +"&key=AIzaSyCc2PqOCbvrNGtDRwINl4X_tiywxt9TDPA");
-                    }
+                    nodeWgs.execute("https://maps.googleapis.com/maps/api/directions/json?"
+                            +"origin="+startTxt.getText().toString()
+                            +"&destination="+stopTxt.getText().toString()
+                            +"&key=AIzaSyCc2PqOCbvrNGtDRwINl4X_tiywxt9TDPA");
                 }else{
                     Toast.makeText(getApplicationContext(),"3개 이하만 표시합니다.", Toast.LENGTH_SHORT).show();
                 }
@@ -104,24 +108,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    //"lat,lng" 형식 확인
-    public boolean pathReadyCk(String wgs84){
-        boolean check;
-        //String wgs84_x, wgs84_y;
-        int comNum;
-        //Double.valueOf()
-        if(!wgs84.isEmpty()&&wgs84.contains(",")){
-            comNum=wgs84.indexOf(",");
-            //wgs84_x=wgs84.substring(0,comNum-1);
-            //wgs84_y=wgs84.substring(comNum+1);
-            check=true;
-        }else{
-            check=false;
-        }
-        return check;
-    }
-
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
@@ -136,14 +122,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        /*
-        System.out.println("test: "+marker.getId());
-        System.out.println("test: "+marker.getSnippet());
-        System.out.println("test: "+marker.getTitle());
-        System.out.println("test: "+marker.getAlpha());
-        System.out.println("test: "+marker.getPosition());
-        System.out.println("test: "+marker.getRotation());
-        */
 
         return false;
     }
@@ -190,8 +168,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         protected void onPostExecute(String str) {
 
-            Vector<Vector<LatLng>> nodeVec= new Vector<Vector<LatLng>>();
             String pathCk_s;    //경로 데이터 확인
+
+            Vector<Vector<Vector<LatLng>>> nodeVec= new Vector();
+
             try {
                 JSONObject gDirectJo = new JSONObject(str);
 
@@ -199,13 +179,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //경로 얻기
                 DirectionsJSONParser parser = new DirectionsJSONParser();
+                //nodeVec=parser.getall();
                 nodeVec=parser.parse(gDirectJo);
 
                 if(rePolyCheck==0)  //세가지 경로 중 처음 경로만 저장
                 list_val=gDirectJo.toString();
 
-                if(pathCk(pathCk_s))
-                    addPolyline(nodeVec);
+                if(pathCk(pathCk_s)){
+                    addPolyline2(nodeVec);
+                }
                 else
                     Toast.makeText(getApplicationContext(),"지원되지 않아요!:"+pathCk_s,Toast.LENGTH_SHORT).show();
 
@@ -234,25 +216,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-
     //polyline 그리기
-    public void addPolyline(Vector<Vector<LatLng>> node){
+    public void addPolyline2(Vector<Vector<Vector<LatLng>>> node){
 
         PolylineOptions poly= new PolylineOptions().geodesic(true);
 
         int[] polColor={Color.RED, Color.BLUE, Color.YELLOW};//횟수에 따른 경로 색 변경용
-
+        //node-> rout:[{legs:[{steps:[{LatLng},...]},...]},...]
         for(int i=0; i<node.size(); i++){
-            poly.addAll(node.get(i));
-            poly.width(3);
-            poly.color(polColor[rePolyCheck]);
-            /*동일
             for(int j=0; j<node.get(i).size(); j++){
-                poly.add(node.get(i).get(j));
+                poly.addAll(node.get(i).get(j));
                 poly.width(3);
-                poly.color(Color.RED);
+                poly.color(polColor[rePolyCheck]);
             }
-            */
         }
 
         map.addPolyline(poly);
@@ -264,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapClick(LatLng latLng) {
 
-        if(startTxt.isFocused()){   //startTxt 선택시
+        if(startR.isChecked()){   //startTxt 선택시
             if(sMarkAdd){   //start Marker 존제 여부 확인 후 추가
                 startMark=map.addMarker(new MarkerOptions()
                         .position(latLng)
@@ -278,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startTxt.setText(latLng.latitude+","+latLng.longitude);
         }
 
-        if(stopTxt.isFocused()){
+        if(stopR.isChecked()){
             if(eMarkAdd){
                 stopMark=map.addMarker(new MarkerOptions()
                         .position(latLng)

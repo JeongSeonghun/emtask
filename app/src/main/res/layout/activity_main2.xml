@@ -106,7 +106,8 @@
         android:id="@+id/leg_num"
         android:layout_above="@+id/list"
         android:layout_toStartOf="@+id/step_num"
-        android:hint="구간" />
+        android:hint="구간"
+        android:autoText="false" />
 
     <TextView
         android:layout_width="wrap_content"
