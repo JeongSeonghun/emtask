@@ -101,11 +101,35 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 Intent intent= new Intent(getApplicationContext(), ListActivity.class);
+
                 intent.putExtra("list",list_val);
                 startActivity(intent);
             }
         });
 
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Vector<Vector<Vector<LatLng>>> searchPath;
+        try {
+            JSONObject gDirectJo = new JSONObject(intent.getStringExtra("list"));
+            
+            DirectionsJSONParser2 parser2= new DirectionsJSONParser2();
+            searchPath=parser2.parse(gDirectJo);
+
+            System.out.println("test 002 : "+searchPath.size());
+            //System.out.println("test 002 : "+searchPath.get(0).get(0).get(0).toString());
+
+
+            
+        } catch (JSONException e) {
+
+            e.printStackTrace();
+
+        }
+        
     }
 
     @Override
@@ -186,9 +210,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 list_val=gDirectJo.toString();
 
                 if(pathCk(pathCk_s)){
-                    addPolyline2(nodeVec);
-                }
-                else
+                    addPolyline(nodeVec);
+                }else
                     Toast.makeText(getApplicationContext(),"지원되지 않아요!:"+pathCk_s,Toast.LENGTH_SHORT).show();
 
             } catch (JSONException e) {
@@ -217,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     //polyline 그리기
-    public void addPolyline2(Vector<Vector<Vector<LatLng>>> node){
+    public void addPolyline(Vector<Vector<Vector<LatLng>>> node){
 
         PolylineOptions poly= new PolylineOptions().geodesic(true);
 
