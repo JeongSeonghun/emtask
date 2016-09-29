@@ -154,6 +154,7 @@ public class ListActivity extends AppCompatActivity {
             }
         }
         node.setText(String.valueOf(nodes2.size()));
+
         list.setAdapter(new NodeAdapter(getApplicationContext(), R.layout.info, nodes2));
 
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -161,7 +162,12 @@ public class ListActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if(click_Ck){
                     view.setBackgroundColor(Color.CYAN);
+
+
+                    TextView tv= (TextView)view.findViewById(R.id.num);
+                    tv.setBackgroundColor(Color.WHITE);
                     System.out.println("test4: "+nodes2.get(i));
+                    System.out.println("test4: "+view.getId());
                     searchVal_s=nodes2.get(i);
                     click_Ck=false;
                 }else{
@@ -222,14 +228,17 @@ public class ListActivity extends AppCompatActivity {
     public String sendJSONString(Vector<Vector<Vector<LatLng>>> searchPath){
         String sendString="{\"routes\":[";
 
+        System.out.println("test000: rout"+searchPath.size());
         for(int i=0; i<searchPath.size();i++){//legs
             if(i==0) sendString+="{";
             else sendString+=",{";
             sendString+="\"legs\":[";
+            System.out.println("test000: legs"+searchPath.get(i).size());
             for(int j=0; j<searchPath.get(i).size();j++){//steps
                 if(j==0) sendString+="{";
                 else sendString+=",{";
                 sendString+="\"steps\":[";
+                System.out.println("test000: steps"+searchPath.get(i).get(j).size());
                 for(int k=0; k<searchPath.get(i).get(j).size();k++){//point
                     if(k==0) sendString+="{";
                     else sendString+=",{";

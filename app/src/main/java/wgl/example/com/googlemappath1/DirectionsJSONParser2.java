@@ -53,8 +53,10 @@ public class DirectionsJSONParser2 {
                     //              ,요소"end_address", 요소"html_instructions", 요소"maneuver", 요소"travel_mode"
                     //              ,배열traffic_speed_entry, 배열via_waypoint 제외
                     jSteps = ( (JSONObject)jLegs.get(j)).getJSONArray("steps");
-
+                    Vector<LatLng> list=new Vector();
                     /** Traversing all steps */
+                    System.out.println("test001: N :"+jSteps.length());
+
                     for(int k=0;k<jSteps.length();k++){ //step배열 객체 전체 확인
                         //String polyline = "";
                         //( ( step[k]->k객체 )->poluline객체 )->point =>String형으로
@@ -63,25 +65,25 @@ public class DirectionsJSONParser2 {
                         //decodepoly 제작 메서드 List<LatLng>반환
                         //List<LatLng> list = decodePoly(polyline);
                         //Vector<LatLng> list= decodePoly(polyline);
-                        Vector<LatLng> list=new Vector();
-                        for(int l=0;l<((JSONObject) jSteps.get(k)).length();l++){
-                            list.add(new LatLng(Integer.valueOf(jSteps.getJSONArray(k).getJSONObject(l).getString("lat")),
-                                    Integer.valueOf(jSteps.getJSONArray(k).getJSONObject(l).getString("lng"))));
-                        }
+                        System.out.println("test001: "+jSteps.getJSONObject(k).getString("lat")
+                        +"/"+jSteps.getJSONObject(k).getString("lng"));
 
-                        search_leg.add(list);
+                        list.add(new LatLng(Double.valueOf(jSteps.getJSONObject(k).getString("lat")),
+                                    Double.valueOf(jSteps.getJSONObject(k).getString("lng"))));
 
                     }
                     //routes.add(path); //j번째 leg들을 저장
+                    search_leg.add(list);
 
-                    search.add(search_leg);
 
                 }
+                search.add(search_leg);
             }
 
         } catch (JSONException e) {
             e.printStackTrace();
         }catch (Exception e){
+            e.printStackTrace();
         }
 
         //return routes;

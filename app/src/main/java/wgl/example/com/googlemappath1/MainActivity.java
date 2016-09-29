@@ -1,11 +1,13 @@
 package wgl.example.com.googlemappath1;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 //import android.location.Location;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,9 +30,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Vector;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener
@@ -46,6 +56,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     RadioButton startR, stopR;
 
     String list_val="";    //intent전달용 json값
+
+    long now;
+    Date date;
+    SimpleDateFormat sim= new SimpleDateFormat("MM/dd HH:mm:ss.SSS");
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         mapfrag= ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
         mapfrag.getMapAsync(this);
+
 
         pathBt.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -119,9 +135,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             DirectionsJSONParser2 parser2= new DirectionsJSONParser2();
             searchPath=parser2.parse(gDirectJo);
 
-            System.out.println("test 002 : "+searchPath.size());
-            //System.out.println("test 002 : "+searchPath.get(0).get(0).get(0).toString());
-
+            addPolyline2(searchPath);
 
             
         } catch (JSONException e) {
@@ -260,8 +274,67 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    public void addPolyline2(Vector<Vector<Vector<LatLng>>> node){
+
+        PolylineOptions poly= new PolylineOptions().geodesic(true);
+
+        //node-> rout:[{legs:[{steps:[{LatLng},...]},...]},...]
+        for(int i=0; i<node.size(); i++){
+            for(int j=0; j<node.get(i).size(); j++){
+                poly.addAll(node.get(i).get(j));
+                poly.width(7);
+                poly.color(Color.BLUE);
+            }
+        }
+
+        map.addPolyline(poly);
+
+        rePolyCheck+=1;
+
+    }
+
     @Override
     public void onMapClick(LatLng latLng) {
+        now= System.currentTimeMillis();
+        date= new Date(now);
+        String tests=sim.format(date);
+
+        try {
+            System.out.println("test006_0: "+tests);
+
+            // 파일 쓰기
+            //FileOutputStream fos = openFileOutput("test.txt", Context.MODE_APPEND);
+            //FileOutputStream fos = openFileOutput("test.txt", Context.MODE_PRIVATE);
+            FileOutputStream fos = openFileOutput("text.txt", Context.MODE_WORLD_READABLE);
+
+            //String str = "Android File IO Test";
+            fos.write(tests.getBytes());
+
+            fos.close();
+
+            System.out.println("test006_0: end");
+
+        }catch (Exception e){}
+
+
+        /*
+
+        BufferedWriter br=null;
+        try {
+            System.out.println("test006_0: "+tests);
+            br=new BufferedWriter(new OutputStreamWriter(openFileOutput("data1.txt", MODE_WORLD_WRITEABLE)));
+            br.append("안녕하세요");
+            br.append("반갑습니다");
+            System.out.println("test006: end");
+        } catch (Exception e) {
+            Log.i("IO", "File Input Error");
+
+        }
+        */
+
+
+//*/
+        create_file();
 
         if(startR.isChecked()){   //startTxt 선택시
             if(sMarkAdd){   //start Marker 존제 여부 확인 후 추가
@@ -289,5 +362,34 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             stopTxt.setText(latLng.latitude+","+latLng.longitude);
         }
 
+    }
+
+    private void create_file()
+    {
+        System.out.println("test006_0: s");
+
+
+        String dirPath = getFilesDir().getAbsolutePath();
+        System.out.println("test006_0: "+dirPath);
+        File file = new File(dirPath);
+        File file2 = new File("Andoroid/data/wgl.exaple.comm.googlemappath1/test.txt");
+
+
+        try {
+
+            File savefile = new File(dirPath+"/test.txt");
+            FileOutputStream fos = new FileOutputStream(savefile);
+            System.out.println("test006_0: "+file.getAbsolutePath());
+            System.out.println("test006_0: "+file.getCanonicalPath());
+            System.out.println("test006_0: "+savefile.getCanonicalPath());
+
+            String msg = "test";
+            fos.write(msg.getBytes());
+            fos.close();
+            System.out.println("test006_0: end");
+
+        } catch(IOException e){
+
+        }
     }
 }
