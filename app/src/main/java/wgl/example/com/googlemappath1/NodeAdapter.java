@@ -1,6 +1,7 @@
 package wgl.example.com.googlemappath1;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,9 @@ public class NodeAdapter extends BaseAdapter {
     Context context;
     Vector<LatLng> al= new Vector();
     int layout;
+
+    int clickNum;
+    int indexCk;
 
     LayoutInflater inf;// xml에 정의된 자원(resource)들을 view로 반환
 
@@ -57,9 +61,23 @@ public class NodeAdapter extends BaseAdapter {
         num.setText(String.valueOf(i+1));
         value.setText(al.get(i).toString());
 
+        if(indexCk==i&&clickNum==1){
+            view.setBackgroundColor(Color.CYAN);
+        }else{
+            view.setBackgroundColor(Color.WHITE);
+        }
+
 
         return view;
     }
+
+    public void setClickNum(int clickNum){
+        this.clickNum=clickNum;
+    }
+    public void setIndexCk(int indexCk){
+        this.indexCk=indexCk;
+    }
+
     /*
     View inflate( int resource, ViewGroup root ) 현제 사용
     View inflate( XmlPullParser parser, ViewGroup root )

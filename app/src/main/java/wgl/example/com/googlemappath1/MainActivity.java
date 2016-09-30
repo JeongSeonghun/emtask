@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     boolean sMarkAdd=true, eMarkAdd=true; //마커 표시 여부
     SupportMapFragment mapfrag;
     Button listShow;
-    int rePolyCheck=0;  //경로 개수 확인
+    boolean rePolyCheck=true;  //경로 개수 확인
     RadioButton startR, stopR;
 
     String list_val="";    //intent전달용 json값
@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Date date;
     SimpleDateFormat sim= new SimpleDateFormat("MM/dd HH:mm:ss.SSS");
 
+    int rePolyNum=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,13 +88,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //nodeWgs.execute("https://maps.googleapis.com/maps/api/directions/json?origin=Toronto&destination=Montreal&key=AIzaSyCc2PqOCbvrNGtDRwINl4X_tiywxt9TDPA\n");
                 //nodeWgs.execute("https://maps.googleapis.com/maps/api/directions/json?origin=-33.866,151.195&destination=-33.866,148.195&key=AIzaSyCc2PqOCbvrNGtDRwINl4X_tiywxt9TDPA");
 
-                if(rePolyCheck<3){
+                if(rePolyCheck){
                     nodeWgs.execute("https://maps.googleapis.com/maps/api/directions/json?"
                             +"origin="+startTxt.getText().toString()
                             +"&destination="+stopTxt.getText().toString()
                             +"&key=AIzaSyCc2PqOCbvrNGtDRwINl4X_tiywxt9TDPA");
                 }else{
-                    Toast.makeText(getApplicationContext(),"3개 이하만 표시합니다.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"Reset버튼을 눌러주세요.", Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -105,7 +106,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 map.clear();
                 sMarkAdd=true;
                 eMarkAdd=true;
-                rePolyCheck=0;
+                rePolyCheck=true;
+                rePolyNum=0;
                 list_val="";
                 startTxt.setText("");
                 stopTxt.setText("");
@@ -118,8 +120,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onClick(View view) {
                 Intent intent= new Intent(getApplicationContext(), ListActivity.class);
 
-                intent.putExtra("list",list_val);
-                startActivity(intent);
+                if(rePolyNum<3){
+                    intent.putExtra("list",list_val);
+                    startActivity(intent);
+                }else{
+                    Toast.makeText(getApplicationContext(),"3번까지로 제한됩니다. reset을 눌러주세요.", Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
 
@@ -135,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             DirectionsJSONParser2 parser2= new DirectionsJSONParser2();
             searchPath=parser2.parse(gDirectJo);
 
-            addPolyline2(searchPath);
+            addPolyline(searchPath, false);
 
             
         } catch (JSONException e) {
@@ -220,11 +227,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //nodeVec=parser.getall();
                 nodeVec=parser.parse(gDirectJo);
 
-                if(rePolyCheck==0)  //세가지 경로 중 처음 경로만 저장
+                if(rePolyCheck)  //polyline 존제 확인
                 list_val=gDirectJo.toString();
 
-                if(pathCk(pathCk_s)){
-                    addPolyline(nodeVec);
+                if(pathCk(pathCk_s)){   //json 결과 값 존제 환인
+                    addPolyline(nodeVec, true);
                 }else
                     Toast.makeText(getApplicationContext(),"지원되지 않아요!:"+pathCk_s,Toast.LENGTH_SHORT).show();
 
@@ -254,42 +261,33 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     //polyline 그리기
-    public void addPolyline(Vector<Vector<Vector<LatLng>>> node){
+    public void addPolyline(Vector<Vector<Vector<LatLng>>> node, boolean seachCk){
 
         PolylineOptions poly= new PolylineOptions().geodesic(true);
-
+        int[] width={3,10};
         int[] polColor={Color.RED, Color.BLUE, Color.YELLOW};//횟수에 따른 경로 색 변경용
+        int setNum;
         //node-> rout:[{legs:[{steps:[{LatLng},...]},...]},...]
+
+        if(seachCk)
+            setNum=0;
+        else{
+            setNum=1;
+            rePolyNum+=1;
+        }
+
+
         for(int i=0; i<node.size(); i++){
             for(int j=0; j<node.get(i).size(); j++){
                 poly.addAll(node.get(i).get(j));
-                poly.width(3);
-                poly.color(polColor[rePolyCheck]);
+                poly.width(width[setNum]);
+                poly.color(polColor[setNum]);
             }
         }
 
         map.addPolyline(poly);
 
-        rePolyCheck+=1;
-
-    }
-
-    public void addPolyline2(Vector<Vector<Vector<LatLng>>> node){
-
-        PolylineOptions poly= new PolylineOptions().geodesic(true);
-
-        //node-> rout:[{legs:[{steps:[{LatLng},...]},...]},...]
-        for(int i=0; i<node.size(); i++){
-            for(int j=0; j<node.get(i).size(); j++){
-                poly.addAll(node.get(i).get(j));
-                poly.width(7);
-                poly.color(Color.BLUE);
-            }
-        }
-
-        map.addPolyline(poly);
-
-        rePolyCheck+=1;
+        rePolyCheck=false;
 
     }
 
@@ -299,42 +297,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         date= new Date(now);
         String tests=sim.format(date);
 
-        try {
-            System.out.println("test006_0: "+tests);
-
-            // 파일 쓰기
-            //FileOutputStream fos = openFileOutput("test.txt", Context.MODE_APPEND);
-            //FileOutputStream fos = openFileOutput("test.txt", Context.MODE_PRIVATE);
-            FileOutputStream fos = openFileOutput("text.txt", Context.MODE_WORLD_READABLE);
-
-            //String str = "Android File IO Test";
-            fos.write(tests.getBytes());
-
-            fos.close();
-
-            System.out.println("test006_0: end");
-
-        }catch (Exception e){}
-
-
-        /*
-
-        BufferedWriter br=null;
-        try {
-            System.out.println("test006_0: "+tests);
-            br=new BufferedWriter(new OutputStreamWriter(openFileOutput("data1.txt", MODE_WORLD_WRITEABLE)));
-            br.append("안녕하세요");
-            br.append("반갑습니다");
-            System.out.println("test006: end");
-        } catch (Exception e) {
-            Log.i("IO", "File Input Error");
-
-        }
-        */
-
-
-//*/
-        create_file();
 
         if(startR.isChecked()){   //startTxt 선택시
             if(sMarkAdd){   //start Marker 존제 여부 확인 후 추가
@@ -364,32 +326,4 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    private void create_file()
-    {
-        System.out.println("test006_0: s");
-
-
-        String dirPath = getFilesDir().getAbsolutePath();
-        System.out.println("test006_0: "+dirPath);
-        File file = new File(dirPath);
-        File file2 = new File("Andoroid/data/wgl.exaple.comm.googlemappath1/test.txt");
-
-
-        try {
-
-            File savefile = new File(dirPath+"/test.txt");
-            FileOutputStream fos = new FileOutputStream(savefile);
-            System.out.println("test006_0: "+file.getAbsolutePath());
-            System.out.println("test006_0: "+file.getCanonicalPath());
-            System.out.println("test006_0: "+savefile.getCanonicalPath());
-
-            String msg = "test";
-            fos.write(msg.getBytes());
-            fos.close();
-            System.out.println("test006_0: end");
-
-        } catch(IOException e){
-
-        }
-    }
 }
