@@ -1,5 +1,6 @@
 package wgl.example.com.googlemappath1;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
@@ -19,7 +20,10 @@ import com.google.android.gms.maps.model.LatLng;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Vector;
 
 public class ListActivity extends AppCompatActivity {
@@ -41,6 +45,11 @@ public class ListActivity extends AppCompatActivity {
 
     Vector<Vector<Vector<LatLng>>> nodeVec= new Vector();
     Vector<LatLng> nodes2;
+
+    String logSt;
+    long now;
+    Date date;
+    SimpleDateFormat sim= new SimpleDateFormat("MM/dd HH:mm:ss.SSS");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +74,11 @@ public class ListActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 int leg_i, step_i;
+                now= System.currentTimeMillis();
+                date= new Date(now);
+                String timeLog=sim.format(date);
+                logSt=timeLog+":"+"search click\n";
+
 
                 try{
                     if(searchleg.getText().toString().equals(""))
@@ -79,6 +93,15 @@ public class ListActivity extends AppCompatActivity {
 
                     if(pathCk_s.equals("OK")){
                         setList(leg_i,step_i);
+                        
+                    }else{
+                        now= System.currentTimeMillis();
+                        date= new Date(now);
+                        timeLog=sim.format(date);
+                        String log="";
+
+                        log+=logSt+timeLog+":"+"search false\n";
+                        saveLog(log);
                     }
                 }catch(NumberFormatException e){
                     e.printStackTrace();
@@ -106,6 +129,14 @@ public class ListActivity extends AppCompatActivity {
 
         if(pathCk_s.equals("OK")){
             setList(0,0);
+
+            now= System.currentTimeMillis();
+            date= new Date(now);
+            String timeLog=sim.format(date);
+            String log="";
+
+            log+=timeLog+":"+"set list end\n";
+            saveLog(log);
         }
 
     }
@@ -166,6 +197,14 @@ public class ListActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if(click_Ck){
+                    now= System.currentTimeMillis();
+                    date= new Date(now);
+                    String timeLog=sim.format(date);
+                    String log="";
+
+                    log+=timeLog+":"+"first list clik\n";
+                    saveLog(log);
+
                     nodeAdapter.setClickNum(1);
                     nodeAdapter.setIndexCk(i);
 
@@ -174,10 +213,17 @@ public class ListActivity extends AppCompatActivity {
                     searchVal_s=nodes2.get(i);
                     click_Ck=false;
                 }else{
+                    now= System.currentTimeMillis();
+                    date= new Date(now);
+                    String timeLog=sim.format(date);
+                    String log="";
+
+                    log+=timeLog+":"+"sencond list click\n";
+                    saveLog(log);
+
                     view.setBackgroundColor(Color.GREEN);
                     searchVal_e=nodes2.get(i);
 
-                    if(true)
                     showMainActivity(sendJSONString(searchPath(searchVal_s, searchVal_e)));
                 }
             }
@@ -302,5 +348,17 @@ public class ListActivity extends AppCompatActivity {
 
 
         return sendString;
+    }
+
+
+    public void saveLog(String log_data){
+        try {
+            // 파일 쓰기
+            //FileOutputStream fos = openFileOutput("text.txt", Context.MODE_PRIVATE);
+            FileOutputStream fos = openFileOutput("log.txt", Context.MODE_APPEND);
+            fos.write(log_data.getBytes());
+            fos.close();
+
+        }catch (Exception e){}
     }
 }

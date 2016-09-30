@@ -63,6 +63,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     int rePolyNum=0;
 
+    Button logShow;
+    String logSt, logSp;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,6 +100,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Toast.makeText(getApplicationContext(),"Reset버튼을 눌러주세요.", Toast.LENGTH_SHORT).show();
                 }
 
+                now= System.currentTimeMillis();
+                date= new Date(now);
+                String timeLog=sim.format(date);
+                logSt=timeLog+":"+"path Click\n";
             }
         });
 
@@ -130,6 +137,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+        logShow= (Button)findViewById(R.id.log_show);
+        logShow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent= new Intent(getApplicationContext(),LogActivity.class);
+                startActivity(intent);
+            }
+        });
+
     }
 
     @Override
@@ -143,6 +159,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             searchPath=parser2.parse(gDirectJo);
 
             addPolyline(searchPath, false);
+
+            now= System.currentTimeMillis();
+            date= new Date(now);
+            String timeLog=sim.format(date);
+            String log="";
+
+            log+=timeLog+":"+"search poly line end\n";
+            saveLog(log);
 
             
         } catch (JSONException e) {
@@ -232,8 +256,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 if(pathCk(pathCk_s)){   //json 결과 값 존제 환인
                     addPolyline(nodeVec, true);
-                }else
+                    //
+                    now= System.currentTimeMillis();
+                    date= new Date(now);
+                    String timeLog=sim.format(date);
+                    String log="";
+
+                    log+=logSt+timeLog+":"+"poly line end\n";
+                    saveLog(log);
+                }else{
                     Toast.makeText(getApplicationContext(),"지원되지 않아요!:"+pathCk_s,Toast.LENGTH_SHORT).show();
+                    now= System.currentTimeMillis();
+                    date= new Date(now);
+                    String timeLog=sim.format(date);
+                    String log="";
+
+                    log+=logSt+timeLog+":"+"poly line end,false\n";
+                    saveLog(log);
+                }
+
+
 
             } catch (JSONException e) {
 
@@ -295,8 +337,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapClick(LatLng latLng) {
         now= System.currentTimeMillis();
         date= new Date(now);
-        String tests=sim.format(date);
-
+        String timeLog=sim.format(date);
+        String log="";
 
         if(startR.isChecked()){   //startTxt 선택시
             if(sMarkAdd){   //start Marker 존제 여부 확인 후 추가
@@ -310,6 +352,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             //start 좌표 표시 "latitude,longitude"
             startTxt.setText(latLng.latitude+","+latLng.longitude);
+            log+=timeLog+":"+"Start Click\n";
+            saveLog(log);
         }
 
         if(stopR.isChecked()){
@@ -322,8 +366,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 stopMark.setPosition(latLng);
             }
             stopTxt.setText(latLng.latitude+","+latLng.longitude);
+            log+=timeLog+":"+"Stop Click\n";
+            saveLog(log);
         }
 
+    }
+
+
+    public void saveLog(String log_data){
+        try {
+            // 파일 쓰기
+            //FileOutputStream fos = openFileOutput("text.txt", Context.MODE_PRIVATE);
+            FileOutputStream fos = openFileOutput("log.txt", Context.MODE_APPEND);
+            fos.write(log_data.getBytes());
+            fos.close();
+
+        }catch (Exception e){}
     }
 
 }
